@@ -1,0 +1,25 @@
+{
+  "folders": [
+    {
+      "name": "skills",
+      "path": "skills"
+    },
+    {
+      "name": "workflows",
+      "path": "workflows"
+    },
+    {
+      "name": "tools",
+      "path": "tools"
+    },
+    {
+      "name": "commands",
+      "path": "commands"
+    }
+  ],
+  "settings": {
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true
+  }
+}
