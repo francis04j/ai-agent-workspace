@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Workspace: List skills",
+      "type": "shell",
+      "command": "ls -la skills"
+    },
+    {
+      "label": "Workspace: List workflows",
+      "type": "shell",
+      "command": "ls -la workflows"
+    },
+    {
+      "label": "Workspace: List tools",
+      "type": "shell",
+      "command": "ls -la tools"
+    },
+    {
+      "label": "Workspace: List commands",
+      "type": "shell",
+      "command": "ls -la commands"
+    }
+  ]
+}
