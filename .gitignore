@@ -1,0 +1,5 @@
+tools/postgres-mcp/mcp.local.json
+tools/postgres-mcp/.env
+tools/postgres-mcp/db-schema.sql
+node_modules/
+dist/

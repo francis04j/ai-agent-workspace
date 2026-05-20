@@ -1,0 +1,16 @@
+{
+    "name": "ai-agent-workspace",
+    "private": true,
+    "description": "Shared AI agent workspace for skills, rules, commands and tools",
+    "bin": {
+        "jira-read-work-item": "./tools/jira-read-work-item.js"
+    },
+    "scripts": {
+        "jira:read": "tsx tools/jira-read-work-item.ts"
+    },
+    "devDependencies": {
+        "@types/node": "^24.10.1",
+        "tsx": "^4.22.3",
+        "typescript": "^5.9.3"
+    }
+}
