@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node .github/hooks/scripts/log-token-usage.mjs",
+        "cwd": ".",
+        "timeout": 5
+      }
+    ]
+  }
+}
