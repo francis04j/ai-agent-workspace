@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+src/create_agent.py
+src/main.py
+src/simple_agent_console.egg-info/PKG-INFO
+src/simple_agent_console.egg-info/SOURCES.txt
+src/simple_agent_console.egg-info/dependency_links.txt
+src/simple_agent_console.egg-info/entry_points.txt
+src/simple_agent_console.egg-info/requires.txt
+src/simple_agent_console.egg-info/top_level.txt
+src/tools/__init__.py
+src/tools/movie_tools.py
