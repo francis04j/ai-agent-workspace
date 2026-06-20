@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simple-agent-console"
+version = "0.1.0"
+description = "Simple console app for a LangGraph/LangChain movie agent"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "langchain-core>=0.3.0",
+  "langchain-anthropic>=0.3.0",
+  "langgraph>=0.2.60",
+  "python-dotenv>=1.0.0",
+  "pydantic>=2.8.0",
+]
+
+[project.scripts]
+simple-agent-console = "main:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+py-modules = ["main", "create_agent"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["tools*"]

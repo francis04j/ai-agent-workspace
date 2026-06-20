@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import logging
+import uuid
 from pathlib import Path
 from typing import Any
 
+import os
+
 import anthropic
 from dotenv import load_dotenv
+from tavily import TavilyClient
 
 logger = logging.getLogger(__name__)
 
@@ -73,8 +77,15 @@ Think through each step before acting. When the file is written, you are done.""
 
 
 def web_search(query: str) -> str:
-    # Stub: replace with Tavily or Brave Search API for real searches.
-    return f"[Search results for '{query}': connect a real search provider here]"
+    client = TavilyClient(api_key=os.environ["TAVILY_API_KEY"])
+    response = client.search(query=query, max_results=5)
+    results = response.get("results", [])
+    if not results:
+        return f"No results found for '{query}'."
+    lines = []
+    for r in results:
+        lines.append(f"- {r.get('title', 'No title')} ({r.get('url', '')}): {r.get('content', '')}")
+    return "\n".join(lines)
 
 
 def _write_file_to_disk(filename: str, content: str, output_dir: Path) -> str:
@@ -95,14 +106,18 @@ def run_agent(
     goal: str,
     output_dir: str | None = None,
     max_iterations: int = 10,
+    request_id: str | None = None,
 ) -> dict[str, Any]:
+    rid = request_id or str(uuid.uuid4())
     output_root = Path(output_dir or Path(__file__).resolve().parent / "output")
     output_root.mkdir(parents=True, exist_ok=True)
 
     client = anthropic.Anthropic()
     model = _select_model(client)
     messages: list[dict[str, Any]] = [{"role": "user", "content": goal}]
-    logger.info("agent started | model=%s | goal=%r", model, goal)
+    total_input_tokens = 0
+    total_output_tokens = 0
+    logger.info("agent started | request_id=%s | model=%s | goal=%r", rid, model, goal)
 
     for iteration in range(1, max_iterations + 1):
         response = client.messages.create(
@@ -112,6 +127,8 @@ def run_agent(
             tools=TOOLS,
             messages=messages,
         )
+        total_input_tokens += response.usage.input_tokens
+        total_output_tokens += response.usage.output_tokens
 
         if response.stop_reason == "end_turn":
             final_text = next(
@@ -119,9 +136,8 @@ def run_agent(
                 "Task complete.",
             )
             logger.info(
-                "agent finished | no tool calls | iterations=%d | model=%s",
-                iteration,
-                model,
+                "agent finished | request_id=%s | iterations=%d | model=%s | input_tokens=%d | output_tokens=%d",
+                rid, iteration, model, total_input_tokens, total_output_tokens,
             )
             return {
                 "goal": goal,
@@ -129,6 +145,12 @@ def run_agent(
                 "iterations": iteration,
                 "output_dir": str(output_root),
                 "result": final_text,
+                "request_id": rid,
+                "usage": {
+                    "input_tokens": total_input_tokens,
+                    "output_tokens": total_output_tokens,
+                    "total_tokens": total_input_tokens + total_output_tokens,
+                },
             }
 
         if response.stop_reason == "tool_use":
@@ -137,16 +159,13 @@ def run_agent(
             for block in response.content:
                 if block.type == "tool_use":
                     logger.info(
-                        "tool call | iteration=%d | tool=%s | inputs=%r",
-                        iteration,
-                        block.name,
-                        block.input,
+                        "tool call | request_id=%s | iteration=%d | tool=%s | inputs=%r",
+                        rid, iteration, block.name, block.input,
                     )
                     result = execute_tool(block.name, block.input, output_root)
                     logger.info(
-                        "tool result | iteration=%d | tool=%s | result=%r",
-                        iteration,
-                        block.name,
+                        "tool result | request_id=%s | iteration=%d | tool=%s | result=%r",
+                        rid, iteration, block.name,
                         result[:120] if isinstance(result, str) else result,
                     )
                     tool_results.append({
@@ -157,9 +176,8 @@ def run_agent(
             messages.append({"role": "user", "content": tool_results})
 
     logger.warning(
-        "agent stopped | max iterations reached | iterations=%d | model=%s",
-        max_iterations,
-        model,
+        "agent stopped | request_id=%s | max iterations reached | iterations=%d | model=%s",
+        rid, max_iterations, model,
     )
     return {
         "goal": goal,
@@ -167,4 +185,10 @@ def run_agent(
         "iterations": max_iterations,
         "output_dir": str(output_root),
         "result": "Max iterations reached.",
+        "request_id": rid,
+        "usage": {
+            "input_tokens": total_input_tokens,
+            "output_tokens": total_output_tokens,
+            "total_tokens": total_input_tokens + total_output_tokens,
+        },
     }
